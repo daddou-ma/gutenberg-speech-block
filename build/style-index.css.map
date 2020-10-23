@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///style.scss"],"names":[],"mappings":"AAAA;EACE,WAAW;EACX,YAAY,EAAE","file":"style-index.css","sourcesContent":[".wp-block-create-block-speech-block {\n  color: #333;\n  padding: 2px; }\n"],"sourceRoot":""}
