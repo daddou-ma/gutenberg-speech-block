@@ -453,14 +453,16 @@ function Edit(_ref) {
         console.log("Recognition Started", speech.recognizing);
       });
       speech.onend(function () {
-        setRecognizing(false);
-        console.log("Recognition Stoped", speech.recognizing);
+        if (richTextRef.current) {
+          setRecognizing(false);
+          console.log("Recognition Stoped", speech.recognizing);
+        }
       });
       speech.onresult(function (text) {
         var selection = document.getSelection();
         var range = selection.getRangeAt(0);
 
-        if (richTextRef.current.contains(range.startContainer)) {
+        if (recognizing && richTextRef.current.contains(range.startContainer)) {
           range.startContainer.insertData(range.startOffset, text);
           range.setStart(range.startContainer, range.startOffset + text.length);
         }
@@ -471,9 +473,7 @@ function Edit(_ref) {
     }
 
     return function () {
-      if (speech.recognizing) {
-        speech.stop();
-      }
+      speech.stop();
     };
   }, [isSelected]);
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
@@ -566,6 +566,28 @@ Object(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__["registerBlockType"])('cre
       source: 'children',
       selector: 'p'
     }
+  },
+  transforms: {
+    from: [{
+      type: 'block',
+      blocks: ['core/paragraph'],
+      transform: function transform(_ref) {
+        var content = _ref.content;
+        return Object(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__["createBlock"])('create-block/speech-block', {
+          content: content
+        });
+      }
+    }],
+    to: [{
+      type: 'block',
+      blocks: ['core/paragraph'],
+      transform: function transform(_ref2) {
+        var content = _ref2.content;
+        return Object(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__["createBlock"])('core/paragraph', {
+          content: content
+        });
+      }
+    }]
   },
   edit: _edit__WEBPACK_IMPORTED_MODULE_2__["default"],
   save: _save__WEBPACK_IMPORTED_MODULE_3__["default"]
@@ -784,18 +806,19 @@ var SpeechToText = /*#__PURE__*/function () {
     this.recognition = new SpeechRecognition();
     this.recognition.lang = lang;
     this.recognition.continuous = true;
-    this.startListener();
   }
 
   _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(SpeechToText, [{
     key: "start",
     value: function start() {
+      this.startListener();
       this.recognition.start();
       this.recognizing = true;
     }
   }, {
     key: "stop",
     value: function stop() {
+      this.stopListener();
       this.recognition.stop();
       this.recognizing = false;
     }
@@ -845,6 +868,11 @@ var SpeechToText = /*#__PURE__*/function () {
 
         _this2.onresult(transcript);
       };
+    }
+  }, {
+    key: "stopListener",
+    value: function stopListener() {
+      this.recognition.onresult = null;
     }
   }, {
     key: "onstart",

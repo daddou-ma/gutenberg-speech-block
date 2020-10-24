@@ -6,7 +6,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from '@wordpress/blocks';
+import { registerBlockType, createBlock } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 
 
@@ -35,6 +35,26 @@ registerBlockType( 'create-block/speech-block', {
 			source: 'children',
 			selector: 'p',
 		},
+	},
+	transforms: {
+		from: [{
+			type: 'block',
+			blocks: ['core/paragraph'],
+			transform: ({ content }) => {
+				return createBlock('create-block/speech-block', {
+					content,
+				})
+			},
+		}],
+		to: [{
+			type: 'block',
+			blocks: ['core/paragraph'],
+			transform: ({ content }) => {
+				return createBlock('core/paragraph', {
+					content,
+				})
+			},
+		}],
 	},
 	edit: Edit,
 	save,

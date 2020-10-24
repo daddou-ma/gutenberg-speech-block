@@ -7,16 +7,16 @@ export default class SpeechToText {
 
 		this.recognition.lang = lang;
 		this.recognition.continuous = true;
-
-		this.startListener();
 	}
 
 	start() {
+		this.startListener();
 		this.recognition.start();
 		this.recognizing = true;
 	}
 
 	stop() {
+		this.stopListener();
 		this.recognition.stop();
 		this.recognizing = false;
 	}
@@ -50,6 +50,9 @@ export default class SpeechToText {
 
 			this.onresult(transcript);
 		};
+	}
+	stopListener() {
+		this.recognition.onresult = null;
 	}
 	onstart(func) {
 		this.recognition.onstart = (...props) => {

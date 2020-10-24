@@ -39,14 +39,16 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 				console.log("Recognition Started", speech.recognizing);
 			});
 			speech.onend(() => {
-				setRecognizing(false);
-				console.log("Recognition Stoped", speech.recognizing);
+				if (richTextRef.current) {
+					setRecognizing(false);
+					console.log("Recognition Stoped", speech.recognizing);
+				}
 			});
 			speech.onresult((text) => {
 				const selection = document.getSelection();
 				const range = selection.getRangeAt(0);
 
-				if (richTextRef.current.contains(range.startContainer)) {
+				if (recognizing && richTextRef.current.contains(range.startContainer)) {
 					range.startContainer.insertData(range.startOffset, text);
 					range.setStart(range.startContainer, range.startOffset + text.length);
 				}
@@ -58,9 +60,7 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 		}
 
 		return () => {
-			if (speech.recognizing) {
-				speech.stop();
-			}
+			speech.stop();
 		};
 	}, [isSelected]);
 
