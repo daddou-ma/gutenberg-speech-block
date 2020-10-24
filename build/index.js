@@ -250,6 +250,32 @@ module.exports = _createClass;
 
 /***/ }),
 
+/***/ "./node_modules/@babel/runtime/helpers/defineProperty.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/defineProperty.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+module.exports = _defineProperty;
+
+/***/ }),
+
 /***/ "./node_modules/@babel/runtime/helpers/iterableToArrayLimit.js":
 /*!*********************************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/iterableToArrayLimit.js ***!
@@ -369,8 +395,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _speech__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./speech */ "./src/speech.js");
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./editor.scss */ "./src/editor.scss");
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_editor_scss__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _language__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./language */ "./src/language.js");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./editor.scss */ "./src/editor.scss");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_editor_scss__WEBPACK_IMPORTED_MODULE_7__);
 
 
 
@@ -392,7 +419,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var speech = new _speech__WEBPACK_IMPORTED_MODULE_5__["default"]();
+window.speech = speech;
 function Edit(_ref) {
   var className = _ref.className,
       isSelected = _ref.isSelected,
@@ -405,17 +434,20 @@ function Edit(_ref) {
       recognizing = _useState2[0],
       setRecognizing = _useState2[1];
 
+  var _useState3 = Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useState"])(document.documentElement.lang),
+      _useState4 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState3, 2),
+      language = _useState4[0],
+      setLanguage = _useState4[1];
+
   var onChangeContent = function onChangeContent(content) {
     setAttributes({
       content: content
     });
   };
 
-  console.log('is-selected', isSelected);
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-    window.rtf = richTextRef;
-
-    if (isSelected && !speech.recognizing) {
+    if (isSelected && !recognizing) {
+      speech.setLang(language);
       speech.onstart(function () {
         setRecognizing(true);
         console.log("Recognition Started", speech.recognizing);
@@ -444,9 +476,25 @@ function Edit(_ref) {
       }
     };
   }, [isSelected]);
+  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+    if (recognizing) {
+      speech.setLang(language);
+    }
+  }, [language]);
   return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])("div", {
     className: "".concat(className, " ").concat(recognizing ? 'recognizing' : '')
-  }, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__["RichText"], {
+  }, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__["InspectorControls"], {
+    key: "inspector"
+  }, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])("div", {
+    className: "speech-block-inspector"
+  }, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])(_wordpress_components__WEBPACK_IMPORTED_MODULE_4__["SelectControl"], {
+    onChange: function onChange(lang) {
+      return setLanguage(lang);
+    },
+    defaultValue: language,
+    label: Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__["__"])('Select a Language'),
+    options: _language__WEBPACK_IMPORTED_MODULE_6__["langageOptions"]
+  }))), Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__["RichText"], {
     tagName: "p",
     onChange: onChangeContent,
     value: content,
@@ -525,6 +573,155 @@ Object(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__["registerBlockType"])('cre
 
 /***/ }),
 
+/***/ "./src/language.js":
+/*!*************************!*\
+  !*** ./src/language.js ***!
+  \*************************/
+/*! exports provided: langageOptions */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "langageOptions", function() { return langageOptions; });
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
+/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
+
+var langageOptions = [{
+  label: "Afrikaans",
+  value: "af-ZA"
+}, {
+  label: "Arabic",
+  value: "ar-DZ"
+}, {
+  label: "Basque",
+  value: "eu-ES"
+}, {
+  label: "Bulgarian",
+  value: "bg-BG"
+}, {
+  label: "Catalan",
+  value: "ca-ES"
+}, {
+  label: "Chinese ,darin",
+  value: "cmn-Hans-CN"
+}, {
+  label: "Chinese ,tonese",
+  value: "yue-Hant-HK"
+}, {
+  label: "Croatian",
+  value: "hr_HR"
+}, {
+  label: "Czech",
+  value: "cs-CZ"
+}, {
+  label: "Danish",
+  value: "da-DK"
+}, {
+  label: "English",
+  value: "en-US"
+}, {
+  label: "Farsi",
+  value: "fa-IR"
+}, {
+  label: "French",
+  value: "fr-FR"
+}, {
+  label: "Filipino",
+  value: "fil-PH"
+}, {
+  label: "Galician",
+  value: "gl-ES"
+}, {
+  label: "German",
+  value: "de-DE"
+}, {
+  label: "Greek",
+  value: "el-GR"
+}, {
+  label: "Finnish",
+  value: "fi-FI"
+}, {
+  label: "Hebrew",
+  value: "he-IL"
+}, {
+  label: "Hindi",
+  value: "hi-IN"
+}, {
+  label: "Hungarian",
+  value: "hu-HU"
+}, {
+  label: "Indonesian",
+  value: "id-ID"
+}, {
+  label: "Icelandic",
+  value: "is-IS"
+}, {
+  label: "Italian",
+  value: "it-IT"
+}, {
+  label: "Japanese",
+  value: "ja-JP"
+}, {
+  label: "Korean",
+  value: "ko-KR"
+}, {
+  label: "Lithuanian",
+  value: "lt-LT"
+}, {
+  label: "Malaysian",
+  value: "ms-MY"
+}, {
+  label: "Dutch",
+  value: "nl-NL"
+}, {
+  label: "Norwegian",
+  value: "nb-NO"
+}, {
+  label: "Polish",
+  value: "pl-PL"
+}, _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()({
+  label: "Portuguese",
+  value: "pt-BR"
+}, "value", "pt-PT"), {
+  label: "Romanian",
+  value: "ro-RO"
+}, {
+  label: "Russian",
+  value: "ru-RU"
+}, {
+  label: "Serbian",
+  value: "sr-RS"
+}, {
+  label: "Slovak",
+  value: "sk-SK"
+}, {
+  label: "Slovenian",
+  value: "sl-SI"
+}, {
+  label: "Spanish",
+  value: "es-ES"
+}, {
+  label: "Swedish",
+  value: "sv-SE"
+}, {
+  label: "Thai",
+  value: "th-TH"
+}, {
+  label: "Turkish",
+  value: "tr-TR"
+}, {
+  label: "Ukrainian",
+  value: "uk-UA"
+}, {
+  label: "Vietnamese",
+  value: "vi-VN"
+}, {
+  label: "Zulu",
+  value: "zu-ZA"
+}];
+
+/***/ }),
+
 /***/ "./src/save.js":
 /*!*********************!*\
   !*** ./src/save.js ***!
@@ -580,40 +777,14 @@ __webpack_require__.r(__webpack_exports__);
 var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
 var SpeechToText = /*#__PURE__*/function () {
-  function SpeechToText() {
-    var _this = this;
-
+  function SpeechToText(lang) {
     _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default()(this, SpeechToText);
 
     this.recognizing = false;
     this.recognition = new SpeechRecognition();
+    this.recognition.lang = lang;
     this.recognition.continuous = true;
-
-    this.recognition.onresult = function (_ref) {
-      var results = _ref.results,
-          resultIndex = _ref.resultIndex;
-
-      if (!results) {
-        return;
-      }
-
-      var alternatives = Array.from(results).slice(resultIndex).find(function (res) {
-        return res.isFinal;
-      });
-
-      if (!alternatives) {
-        return;
-      }
-
-      var _Array$from$reduce = Array.from(alternatives).reduce(function (cur, alt) {
-        return alt.confidence > cur.confidence ? alt : cur;
-      }, {
-        confidence: 0
-      }),
-          transcript = _Array$from$reduce.transcript;
-
-      _this.onresult(transcript);
-    };
+    this.startListener();
   }
 
   _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(SpeechToText, [{
@@ -629,22 +800,69 @@ var SpeechToText = /*#__PURE__*/function () {
       this.recognizing = false;
     }
   }, {
-    key: "onstart",
-    value: function onstart(func) {
+    key: "restart",
+    value: function restart() {
+      var _this = this;
+
+      this.stop();
+      setTimeout(function () {
+        _this.start();
+      }, 1000);
+    }
+  }, {
+    key: "setLang",
+    value: function setLang(lang) {
+      this.recognition.lang = lang;
+      this.restart();
+    }
+  }, {
+    key: "startListener",
+    value: function startListener() {
       var _this2 = this;
 
+      this.recognition.onresult = function (_ref) {
+        var results = _ref.results,
+            resultIndex = _ref.resultIndex;
+
+        if (!results) {
+          return;
+        }
+
+        var alternatives = Array.from(results).slice(resultIndex).find(function (res) {
+          return res.isFinal;
+        });
+
+        if (!alternatives) {
+          return;
+        }
+
+        var _Array$from$reduce = Array.from(alternatives).reduce(function (cur, alt) {
+          return alt.confidence > cur.confidence ? alt : cur;
+        }, {
+          confidence: 0
+        }),
+            transcript = _Array$from$reduce.transcript;
+
+        _this2.onresult(transcript);
+      };
+    }
+  }, {
+    key: "onstart",
+    value: function onstart(func) {
+      var _this3 = this;
+
       this.recognition.onstart = function () {
-        _this2.recognizing = true;
+        _this3.recognizing = true;
         func.apply(void 0, arguments);
       };
     }
   }, {
     key: "onend",
     value: function onend(func) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.recognition.onend = function () {
-        _this3.recognizing = false;
+        _this4.recognizing = false;
         func.apply(void 0, arguments);
       };
 

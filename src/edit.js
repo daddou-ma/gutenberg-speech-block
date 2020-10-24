@@ -8,29 +8,32 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef, useState } from '@wordpress/element';
-import { RichText, useBlockProps } from '@wordpress/block-editor';
-import { Icon } from '@wordpress/components';
+import { RichText, InspectorControls } from '@wordpress/block-editor';
+import { SelectControl, Icon } from '@wordpress/components';
+
 /**
  * Internal dependencies
  */
 import SpeechToText from './speech';
+import { langageOptions } from './language';
+
 import './editor.scss';
 
 const speech = new SpeechToText();
 
-
+window.speech = speech;
 export default function Edit({ className, isSelected, attributes: { content }, setAttributes }) {
 	const richTextRef = useRef(null);
-	const [recognizing, setRecognizing ] = useState(speech.recognizing);
+	const [ recognizing, setRecognizing ] = useState(speech.recognizing);
+	const [ language, setLanguage ] = useState(document.documentElement.lang);
 
 	const onChangeContent = (content) => {
 		setAttributes({ content });
 	};
-	console.log('is-selected', isSelected);
-	useEffect(() => {
-		window.rtf = richTextRef;
 
-		if (isSelected && !speech.recognizing) {
+	useEffect(() => {
+		if (isSelected && !recognizing) {
+			speech.setLang(language);
 			speech.onstart(() => {
 				setRecognizing(true);
 				console.log("Recognition Started", speech.recognizing);
@@ -61,8 +64,24 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 		};
 	}, [isSelected]);
 
+	useEffect(() => {
+		if (recognizing) {
+			speech.setLang(language);
+		}
+	}, [language]);
+
 	return (
 		<div className={`${className} ${recognizing ? 'recognizing' : ''}`}>
+			<InspectorControls key="inspector">
+				<div className="speech-block-inspector">
+					<SelectControl
+						onChange={lang => setLanguage(lang)}
+						defaultValue={language}
+						label={ __( 'Select a Language' ) }
+						options={langageOptions}
+					/>
+				</div>
+			</InspectorControls>
 			<RichText
 				tagName="p"
 				onChange={onChangeContent}
