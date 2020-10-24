@@ -32,8 +32,10 @@ export default function Edit( { className, attributes: { content }, setAttribute
 			const selection = document.getSelection();
 			const range = selection.getRangeAt(0);
 
-			range.startContainer.insertData(range.startOffset, text);
-			range.setStart(range.startContainer, range.startOffset + text.length)
+			if (richTextRef.current.contains(range.startContainer)) {
+				range.startContainer.insertData(range.startOffset, text);
+				range.setStart(range.startContainer, range.startOffset + text.length);
+			}
 		});
 
 		speech.start();

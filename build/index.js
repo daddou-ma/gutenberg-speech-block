@@ -270,8 +270,11 @@ function Edit(_ref) {
     speech.onresult(function (text) {
       var selection = document.getSelection();
       var range = selection.getRangeAt(0);
-      range.startContainer.insertData(range.startOffset, text);
-      range.setStart(range.startContainer, range.startOffset + text.length);
+
+      if (richTextRef.current.contains(range.startContainer)) {
+        range.startContainer.insertData(range.startOffset, text);
+        range.setStart(range.startContainer, range.startOffset + text.length);
+      }
     });
     speech.start();
     return speech.stop;
