@@ -30,25 +30,29 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 	const onChangeContent = (content) => {
 		setAttributes({ content });
 	};
+	useEffect(() => {
+		speech.recognition.lang = language;
+		speech.onstart(() => {
+			if (!recognizing) {
+				setRecognizing(true);
+				console.log("Recognition Started");
+			}
+		});
+		speech.onend(() => {
+			if (richTextRef.current) {
+				setRecognizing(false);
+				console.log("Recognition Stoped");
+			}
+		});
+	}, []);
 
 	useEffect(() => {
 		if (isSelected && !recognizing) {
-			speech.recognition.lang = language;
-			speech.onstart(() => {
-				setRecognizing(true);
-				console.log("Recognition Started", speech.recognizing);
-			});
-			speech.onend(() => {
-				if (richTextRef.current) {
-					setRecognizing(false);
-					console.log("Recognition Stoped", speech.recognizing);
-				}
-			});
 			speech.onresult((text) => {
 				const selection = document.getSelection();
 				const range = selection.getRangeAt(0);
 
-				if (recognizing && richTextRef.current.contains(range.startContainer)) {
+				if (richTextRef.current && richTextRef.current.contains(range.startContainer)) {
 					range.startContainer.insertData(range.startOffset, text);
 					range.setStart(range.startContainer, range.startOffset + text.length);
 				}
@@ -59,9 +63,7 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 			speech.stop();
 		}
 
-		return () => {
-			speech.stop();
-		};
+		return () => speech.stop();
 	}, [isSelected]);
 
 	useEffect(() => {

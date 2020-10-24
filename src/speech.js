@@ -12,20 +12,16 @@ export default class SpeechToText {
 	start() {
 		this.startListener();
 		this.recognition.start();
-		this.recognizing = true;
 	}
 
 	stop() {
 		this.stopListener();
 		this.recognition.stop();
-		this.recognizing = false;
 	}
 
 	restart() {
 		this.stop();
-		setTimeout(() => {
-			this.start();
-		}, 1000);
+		setTimeout(() => this.start(), 1000);
 	}
 
 	setLang(lang) {
@@ -57,14 +53,14 @@ export default class SpeechToText {
 	onstart(func) {
 		this.recognition.onstart = (...props) => {
 			this.recognizing = true;
-			func(...props)
+			func(...props);
 		};
 	}
 
 	onend(func) {
 		this.recognition.onend = (...props) => {
 			this.recognizing = false;
-			func(...props)
+			func(...props);
 		};;
 	}
 

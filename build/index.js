@@ -446,23 +446,27 @@ function Edit(_ref) {
   };
 
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-    if (isSelected && !recognizing) {
-      speech.recognition.lang = language;
-      speech.onstart(function () {
+    speech.recognition.lang = language;
+    speech.onstart(function () {
+      if (!recognizing) {
         setRecognizing(true);
-        console.log("Recognition Started", speech.recognizing);
-      });
-      speech.onend(function () {
-        if (richTextRef.current) {
-          setRecognizing(false);
-          console.log("Recognition Stoped", speech.recognizing);
-        }
-      });
+        console.log("Recognition Started");
+      }
+    });
+    speech.onend(function () {
+      if (richTextRef.current) {
+        setRecognizing(false);
+        console.log("Recognition Stoped");
+      }
+    });
+  }, []);
+  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+    if (isSelected && !recognizing) {
       speech.onresult(function (text) {
         var selection = document.getSelection();
         var range = selection.getRangeAt(0);
 
-        if (recognizing && richTextRef.current.contains(range.startContainer)) {
+        if (richTextRef.current && richTextRef.current.contains(range.startContainer)) {
           range.startContainer.insertData(range.startOffset, text);
           range.setStart(range.startContainer, range.startOffset + text.length);
         }
@@ -473,7 +477,7 @@ function Edit(_ref) {
     }
 
     return function () {
-      speech.stop();
+      return speech.stop();
     };
   }, [isSelected]);
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
@@ -813,14 +817,12 @@ var SpeechToText = /*#__PURE__*/function () {
     value: function start() {
       this.startListener();
       this.recognition.start();
-      this.recognizing = true;
     }
   }, {
     key: "stop",
     value: function stop() {
       this.stopListener();
       this.recognition.stop();
-      this.recognizing = false;
     }
   }, {
     key: "restart",
@@ -829,7 +831,7 @@ var SpeechToText = /*#__PURE__*/function () {
 
       this.stop();
       setTimeout(function () {
-        _this.start();
+        return _this.start();
       }, 1000);
     }
   }, {
