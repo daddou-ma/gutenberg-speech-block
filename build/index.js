@@ -447,7 +447,7 @@ function Edit(_ref) {
 
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
     if (isSelected && !recognizing) {
-      speech.setLang(language);
+      speech.recognition.lang = language;
       speech.onstart(function () {
         setRecognizing(true);
         console.log("Recognition Started", speech.recognizing);

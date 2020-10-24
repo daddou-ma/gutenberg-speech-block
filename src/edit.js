@@ -33,7 +33,7 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 
 	useEffect(() => {
 		if (isSelected && !recognizing) {
-			speech.setLang(language);
+			speech.recognition.lang = language;
 			speech.onstart(() => {
 				setRecognizing(true);
 				console.log("Recognition Started", speech.recognizing);
