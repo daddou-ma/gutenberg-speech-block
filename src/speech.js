@@ -22,7 +22,7 @@ export default class SpeechToText {
         .reduce((cur, alt) => (alt.confidence > cur.confidence ? alt : cur), { confidence: 0 });
 
       this.onresult(transcript);
-    };
+	};
   }
 
   start() {
@@ -36,12 +36,17 @@ export default class SpeechToText {
   }
 
   onstart(func) {
-    this.recognition.onstart = func;
+    this.recognition.onstart = (...props) => {
+		this.recognizing = true;
+		func(...props)
+	};
   }
 
   onend(func) {
-    this.stop();
-    this.recognition.onend = func;
+    this.recognition.onend = (...props) => {
+		this.recognizing = false;
+		func(...props)
+	};;
   }
 
   onresult(func) {
