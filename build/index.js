@@ -170,6 +170,50 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/@babel/runtime/helpers/classCallCheck.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/classCallCheck.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+module.exports = _classCallCheck;
+
+/***/ }),
+
+/***/ "./node_modules/@babel/runtime/helpers/createClass.js":
+/*!************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/createClass.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+module.exports = _createClass;
+
+/***/ }),
+
 /***/ "./src/edit.js":
 /*!*********************!*\
   !*** ./src/edit.js ***!
@@ -186,8 +230,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./editor.scss */ "./src/editor.scss");
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_editor_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _speech__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./speech */ "./src/speech.js");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./editor.scss */ "./src/editor.scss");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_editor_scss__WEBPACK_IMPORTED_MODULE_4__);
 
 
 /**
@@ -200,15 +245,19 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 
+
 /**
  * Internal dependencies
  */
 
 
+
+var speech = new _speech__WEBPACK_IMPORTED_MODULE_3__["default"]();
 function Edit(_ref) {
   var className = _ref.className,
       content = _ref.attributes.content,
       setAttributes = _ref.setAttributes;
+  var richTextRef = Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
 
   var onChangeContent = function onChangeContent(content) {
     setAttributes({
@@ -216,11 +265,23 @@ function Edit(_ref) {
     });
   };
 
+  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    window.rtf = richTextRef;
+    speech.onresult(function (text) {
+      var selection = document.getSelection();
+      var range = selection.getRangeAt(0);
+      range.startContainer.insertData(range.startOffset, text);
+      range.setStart(range.startContainer, range.startOffset + text.length);
+    });
+    speech.start();
+    return speech.stop;
+  }, []);
   return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"])(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__["RichText"], {
     tagName: "p",
     className: className,
     onChange: onChangeContent,
-    value: content
+    value: content,
+    ref: richTextRef
   });
 }
 
@@ -325,6 +386,138 @@ function save(_ref) {
   var content = _ref.attributes.content;
   return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"])("p", null, content);
 }
+
+/***/ }),
+
+/***/ "./src/speech.js":
+/*!***********************!*\
+  !*** ./src/speech.js ***!
+  \***********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SpeechToText; });
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/@babel/runtime/helpers/classCallCheck.js");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/@babel/runtime/helpers/createClass.js");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+
+var SpeechToText = /*#__PURE__*/function () {
+  function SpeechToText() {
+    var _this = this;
+
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default()(this, SpeechToText);
+
+    this.recognizing = false;
+    this.recognition = new SpeechRecognition();
+    this.recognition.continuous = true;
+
+    this.recognition.onresult = function (_ref) {
+      var results = _ref.results,
+          resultIndex = _ref.resultIndex;
+
+      if (!results) {
+        return;
+      }
+
+      var alternatives = Array.from(results).slice(resultIndex).find(function (res) {
+        return res.isFinal;
+      });
+
+      if (!alternatives) {
+        return;
+      }
+
+      var _Array$from$reduce = Array.from(alternatives).reduce(function (cur, alt) {
+        return alt.confidence > cur.confidence ? alt : cur;
+      }, {
+        confidence: 0
+      }),
+          transcript = _Array$from$reduce.transcript;
+
+      _this.onresult(transcript);
+    };
+  }
+
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(SpeechToText, [{
+    key: "start",
+    value: function start() {
+      this.recognition.start();
+      this.recognizing = true;
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      this.recognition.stop();
+      this.recognizing = false;
+    }
+  }, {
+    key: "onstart",
+    value: function onstart(func) {
+      this.recognition.onstart = func;
+    }
+  }, {
+    key: "onend",
+    value: function onend(func) {
+      this.stop();
+      this.recognition.onend = func;
+    }
+  }, {
+    key: "onresult",
+    value: function onresult(func) {
+      this.onresult = func;
+    }
+  }, {
+    key: "onspeechstart",
+    value: function onspeechstart(func) {
+      this.recognition.onspeechstart = func;
+    }
+  }, {
+    key: "onspeechend",
+    value: function onspeechend(func) {
+      this.recognition.onspeechend = func;
+    }
+  }, {
+    key: "onaudiostart",
+    value: function onaudiostart(func) {
+      this.recognition.onaudiostart = func;
+    }
+  }, {
+    key: "onaudioend",
+    value: function onaudioend(func) {
+      this.recognition.onaudioend = func;
+    }
+  }, {
+    key: "onsoundstart",
+    value: function onsoundstart(func) {
+      this.recognition.onsoundstart = func;
+    }
+  }, {
+    key: "onsoundend",
+    value: function onsoundend(func) {
+      this.recognition.onsoundend = func;
+    }
+  }, {
+    key: "onnomatch",
+    value: function onnomatch(func) {
+      this.recognition.onnomatch = func;
+    }
+  }, {
+    key: "onerror",
+    value: function onerror(func) {
+      this.recognition.onerror = func;
+    }
+  }]);
+
+  return SpeechToText;
+}();
+
+
 
 /***/ }),
 
