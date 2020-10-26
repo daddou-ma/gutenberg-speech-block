@@ -26,6 +26,7 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 	const richTextRef = useRef(null);
 	const [recognizing, setRecognizing] = useState(speech.recognizing);
 	const [language, setLanguage] = useState(document.documentElement.lang);
+	const [ previousRange, setPreviousRange ] = useState(null);
 
 	const onChangeContent = (content) => {
 		setAttributes({ content });
@@ -55,13 +56,21 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 				console.log("Recognition Error");
 			}
 		});
+	}, []);
 
-		speech.onresult((text) => {
-			console.log(text);
+	useEffect(() => {
+		speech.onresult(({ transcript, isFinal }) => {
+			console.log(transcript, isFinal);
+
+			if (previousRange) {
+				previousRange.deleteContents()
+			}
+
 			const selection = document.getSelection();
 			const range = selection.getRangeAt(0);
 
-			if (typeof text !== 'string' || !richTextRef || !richTextRef.current.contains(range.startContainer)) {
+
+			if (typeof transcript !== 'string' || !richTextRef || !richTextRef.current.contains(range.startContainer)) {
 				return;
 			}
 
@@ -69,10 +78,17 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 				? range.startContainer.childNodes[0]
 				: range.startContainer;
 
-			insertElement.insertData(range.startOffset, text);
-			range.setStart(range.startContainer, range.startOffset + text.length);
+			insertElement.insertData(range.startOffset, transcript);
+			range.setEnd(range.startContainer, range.startOffset + transcript.length);
+
+			if (isFinal) {
+				setPreviousRange(null);
+				range.setStart(range.startContainer, range.startOffset + transcript.length);
+			} else {
+				setPreviousRange(range);
+			}
 		});
-	}, []);
+	}, [previousRange]);
 
 	useEffect(() => {
 		if (recognizing) {

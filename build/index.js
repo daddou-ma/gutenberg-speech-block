@@ -439,6 +439,11 @@ function Edit(_ref) {
       language = _useState4[0],
       setLanguage = _useState4[1];
 
+  var _useState5 = Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useState"])(null),
+      _useState6 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState5, 2),
+      previousRange = _useState6[0],
+      setPreviousRange = _useState6[1];
+
   var onChangeContent = function onChangeContent(content) {
     setAttributes({
       content: content
@@ -469,20 +474,36 @@ function Edit(_ref) {
         console.log("Recognition Error");
       }
     });
-    speech.onresult(function (text) {
-      console.log(text);
+  }, []);
+  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+    speech.onresult(function (_ref2) {
+      var transcript = _ref2.transcript,
+          isFinal = _ref2.isFinal;
+      console.log(transcript, isFinal);
+
+      if (previousRange) {
+        previousRange.deleteContents();
+      }
+
       var selection = document.getSelection();
       var range = selection.getRangeAt(0);
 
-      if (typeof text !== 'string' || !richTextRef || !richTextRef.current.contains(range.startContainer)) {
+      if (typeof transcript !== 'string' || !richTextRef || !richTextRef.current.contains(range.startContainer)) {
         return;
       }
 
       var insertElement = range.startContainer.tagName === 'p' ? range.startContainer.childNodes[0] : range.startContainer;
-      insertElement.insertData(range.startOffset, text);
-      range.setStart(range.startContainer, range.startOffset + text.length);
+      insertElement.insertData(range.startOffset, transcript);
+      range.setEnd(range.startContainer, range.startOffset + transcript.length);
+
+      if (isFinal) {
+        setPreviousRange(null);
+        range.setStart(range.startContainer, range.startOffset + transcript.length);
+      } else {
+        setPreviousRange(range);
+      }
     });
-  }, []);
+  }, [previousRange]);
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
     if (recognizing) {
       speech.setLang(language);
@@ -808,24 +829,28 @@ function save(_ref) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SpeechToText; });
-/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/@babel/runtime/helpers/classCallCheck.js");
-/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/@babel/runtime/helpers/createClass.js");
-/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/slicedToArray */ "./node_modules/@babel/runtime/helpers/slicedToArray.js");
+/* harmony import */ var _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/@babel/runtime/helpers/classCallCheck.js");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/@babel/runtime/helpers/createClass.js");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
 var SpeechToText = /*#__PURE__*/function () {
   function SpeechToText() {
-    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default()(this, SpeechToText);
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default()(this, SpeechToText);
 
     this.recognizing = false;
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = true;
+    this.recognition.interimResults = true;
   }
 
-  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(SpeechToText, [{
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default()(SpeechToText, [{
     key: "start",
     value: function start() {
       if (this.recognizing) {
@@ -875,9 +900,9 @@ var SpeechToText = /*#__PURE__*/function () {
           return;
         }
 
-        var alternatives = Array.from(results).slice(resultIndex).find(function (res) {
-          return res.isFinal;
-        });
+        var _Array$from$slice = Array.from(results).slice(resultIndex),
+            _Array$from$slice2 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_Array$from$slice, 1),
+            alternatives = _Array$from$slice2[0];
 
         if (!alternatives) {
           return;
@@ -888,9 +913,16 @@ var SpeechToText = /*#__PURE__*/function () {
         }, {
           confidence: 0
         }),
-            transcript = _Array$from$reduce.transcript;
+            transcript = _Array$from$reduce.transcript,
+            confidence = _Array$from$reduce.confidence;
 
-        _this2.onresultcallback(transcript);
+        if (confidence > 0.85) {
+          _this2.onresultcallback({
+            transcript: transcript,
+            confidence: confidence,
+            isFinal: alternatives.isFinal
+          });
+        }
       };
     }
   }, {

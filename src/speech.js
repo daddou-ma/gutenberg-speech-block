@@ -6,6 +6,7 @@ export default class SpeechToText {
 		this.recognition = new SpeechRecognition();
 
 		this.recognition.continuous = true;
+		this.recognition.interimResults = true;
 	}
 
 	start() {
@@ -43,16 +44,18 @@ export default class SpeechToText {
 				return;
 			}
 
-			const alternatives = Array.from(results).slice(resultIndex).find((res) => res.isFinal);
+			const [ alternatives ] = Array.from(results).slice(resultIndex);
 
 			if (!alternatives) {
 				return;
 			}
 
-			const { transcript } = Array.from(alternatives)
+			const { transcript, confidence } = Array.from(alternatives)
 				.reduce((cur, alt) => (alt.confidence > cur.confidence ? alt : cur), { confidence: 0 });
 
-			this.onresultcallback(transcript);
+			if (confidence > 0.85) {
+				this.onresultcallback({ transcript, confidence, isFinal: alternatives.isFinal });
+			}
 		};
 	}
 	stopListener() {
