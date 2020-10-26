@@ -1,20 +1,28 @@
 const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
 export default class SpeechToText {
-	constructor(lang) {
+	constructor() {
 		this.recognizing = false;
 		this.recognition = new SpeechRecognition();
 
-		this.recognition.lang = lang;
 		this.recognition.continuous = true;
 	}
 
 	start() {
+		if (this.recognizing) {
+			return;
+		}
+
+		this.recognizing = true;
 		this.startListener();
 		this.recognition.start();
 	}
 
 	stop() {
+		if (!this.recognizing) {
+			return;
+		}
+
 		this.stopListener();
 		this.recognition.stop();
 	}
@@ -31,7 +39,7 @@ export default class SpeechToText {
 
 	startListener() {
 		this.recognition.onresult = ({ results, resultIndex }) => {
-			if (!results) {
+			if (!results || !this.recognizing) {
 				return;
 			}
 
@@ -44,7 +52,7 @@ export default class SpeechToText {
 			const { transcript } = Array.from(alternatives)
 				.reduce((cur, alt) => (alt.confidence > cur.confidence ? alt : cur), { confidence: 0 });
 
-			this.onresult(transcript);
+			this.onresultcallback(transcript);
 		};
 	}
 	stopListener() {
@@ -65,7 +73,7 @@ export default class SpeechToText {
 	}
 
 	onresult(func) {
-		this.onresult = func;
+		this.onresultcallback = func;
 	}
 
 	onspeechstart(func) {

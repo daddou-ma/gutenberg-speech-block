@@ -448,10 +448,8 @@ function Edit(_ref) {
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
     speech.recognition.lang = language;
     speech.onstart(function () {
-      if (!recognizing) {
-        setRecognizing(true);
-        console.log("Recognition Started");
-      }
+      setRecognizing(true);
+      console.log("Recognition Started");
     });
     speech.onend(function () {
       if (richTextRef.current) {
@@ -459,20 +457,41 @@ function Edit(_ref) {
         console.log("Recognition Stoped");
       }
     });
+    window.addEventListener('blur', function () {
+      return speech.stop();
+    });
+    richTextRef.current.addEventListener('click', function () {
+      return speech.start();
+    });
+    speech.onerror(function () {
+      if (richTextRef.current) {
+        speech.restart();
+        console.log("Recognition Error");
+      }
+    });
+    speech.onresult(function (text) {
+      console.log(text);
+      var selection = document.getSelection();
+      var range = selection.getRangeAt(0);
+
+      if (typeof text !== 'string' || !richTextRef || !richTextRef.current.contains(range.startContainer)) {
+        return;
+      }
+
+      var insertElement = range.startContainer.tagName === 'p' ? range.startContainer.childNodes[0] : range.startContainer;
+      insertElement.insertData(range.startOffset, text);
+      range.setStart(range.startContainer, range.startOffset + text.length);
+    });
   }, []);
   Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-    if (isSelected && !recognizing) {
-      speech.onresult(function (text) {
-        var selection = document.getSelection();
-        var range = selection.getRangeAt(0);
-
-        if (richTextRef.current && richTextRef.current.contains(range.startContainer)) {
-          range.startContainer.insertData(range.startOffset, text);
-          range.setStart(range.startContainer, range.startOffset + text.length);
-        }
-      });
+    if (recognizing) {
+      speech.setLang(language);
+    }
+  }, [language]);
+  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+    if (isSelected) {
       speech.start();
-    } else if (!isSelected && speech.recognizing) {
+    } else if (!isSelected) {
       speech.stop();
     }
 
@@ -480,11 +499,6 @@ function Edit(_ref) {
       return speech.stop();
     };
   }, [isSelected]);
-  Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
-    if (recognizing) {
-      speech.setLang(language);
-    }
-  }, [language]);
   return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])("div", {
     className: "".concat(className, " ").concat(recognizing ? 'recognizing' : '')
   }, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__["createElement"])(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__["InspectorControls"], {
@@ -803,24 +817,32 @@ __webpack_require__.r(__webpack_exports__);
 var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
 var SpeechToText = /*#__PURE__*/function () {
-  function SpeechToText(lang) {
+  function SpeechToText() {
     _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default()(this, SpeechToText);
 
     this.recognizing = false;
     this.recognition = new SpeechRecognition();
-    this.recognition.lang = lang;
     this.recognition.continuous = true;
   }
 
   _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(SpeechToText, [{
     key: "start",
     value: function start() {
+      if (this.recognizing) {
+        return;
+      }
+
+      this.recognizing = true;
       this.startListener();
       this.recognition.start();
     }
   }, {
     key: "stop",
     value: function stop() {
+      if (!this.recognizing) {
+        return;
+      }
+
       this.stopListener();
       this.recognition.stop();
     }
@@ -849,7 +871,7 @@ var SpeechToText = /*#__PURE__*/function () {
         var results = _ref.results,
             resultIndex = _ref.resultIndex;
 
-        if (!results) {
+        if (!results || !_this2.recognizing) {
           return;
         }
 
@@ -868,7 +890,7 @@ var SpeechToText = /*#__PURE__*/function () {
         }),
             transcript = _Array$from$reduce.transcript;
 
-        _this2.onresult(transcript);
+        _this2.onresultcallback(transcript);
       };
     }
   }, {
@@ -901,7 +923,7 @@ var SpeechToText = /*#__PURE__*/function () {
   }, {
     key: "onresult",
     value: function onresult(func) {
-      this.onresult = func;
+      this.onresultcallback = func;
     }
   }, {
     key: "onspeechstart",
