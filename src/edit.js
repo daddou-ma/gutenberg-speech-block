@@ -9,7 +9,7 @@
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef, useState, useCallback } from '@wordpress/element';
 import { RichText, InspectorControls } from '@wordpress/block-editor';
-import { SelectControl, Icon } from '@wordpress/components';
+import { SelectControl, __experimentalNumberControl as NumberControl, Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -26,6 +26,7 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 	const richTextRef = useRef(null);
 	const [recognizing, setRecognizing] = useState(speech.recognizing);
 	const [language, setLanguage] = useState(document.documentElement.lang);
+	const [precision, setPrecision] = useState(0.85);
 	const [ previousRange, setPreviousRange ] = useState(null);
 
 	const onChangeContent = (content) => {
@@ -97,6 +98,10 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 	}, [language]);
 
 	useEffect(() => {
+		speech.setPrecision(precision);
+	}, [precision]);
+
+	useEffect(() => {
 		if (isSelected) {
 			speech.start();
 		} else if (!isSelected) {
@@ -115,6 +120,15 @@ export default function Edit({ className, isSelected, attributes: { content }, s
 						defaultValue={language}
 						label={__('Select a Language')}
 						options={langageOptions}
+					/>
+					<NumberControl
+						isShiftStepEnabled={true}
+						label={__('Precision')}
+						onChange={ setPrecision}
+						step={0.05}
+						min={0}
+						max={1}
+						value={precision}
 					/>
 				</div>
 			</InspectorControls>

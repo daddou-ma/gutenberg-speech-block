@@ -4,6 +4,7 @@ export default class SpeechToText {
 	constructor() {
 		this.recognizing = false;
 		this.recognition = new SpeechRecognition();
+		this.precision = 0.8;
 
 		this.recognition.continuous = true;
 		this.recognition.interimResults = true;
@@ -38,6 +39,10 @@ export default class SpeechToText {
 		this.restart();
 	}
 
+	setPrecision(precision) {
+		this.precision = precision;
+	}
+
 	startListener() {
 		this.recognition.onresult = ({ results, resultIndex }) => {
 			if (!results || !this.recognizing) {
@@ -53,7 +58,7 @@ export default class SpeechToText {
 			const { transcript, confidence } = Array.from(alternatives)
 				.reduce((cur, alt) => (alt.confidence > cur.confidence ? alt : cur), { confidence: 0 });
 
-			if (confidence > 0.85) {
+			if (confidence > this.precision) {
 				this.onresultcallback({ transcript, confidence, isFinal: alternatives.isFinal });
 			}
 		};
